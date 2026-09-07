@@ -90,7 +90,7 @@ class CalculadoraPrima:
         #Factor correspondiente
         prima = asegurado.suma_asegurada * factor / 1000
         return prima
-          def calcular_extra_prima(self, asegurado):    #Calcula el costo adicional de la extraprima 
+    def calcular_extra_prima(self, asegurado):    #Calcula el costo adicional de la extraprima 
         if asegurado.extra_prima == "No": 
             return 0  #Si no tiene extraprima no tiene un costo adicional
 
@@ -112,4 +112,114 @@ class CalculadoraPrima:
         ) #Prima calculada sin agregar la extra prima
 
         return prima_con_extra - prima_sin_extra    #Cuanto aumento por EP    la diferencia represewnta el costo adicional de la extraprima 
+
+#---Tipo de Cambio---
+class ProveedorTipoCambio(ABC):
+    @abstractmethod
+    def obtener_tasa(self):   #Si se tiene un tipo de cambio, debe obtener_tas
+        pass
+
+
+class TipoCambioFijo(ProveedorTipoCambio):    #Tasa fija
+    def __init__(self, tasa=21.13):
+        if tasa <= 0:   #Exitar negativos o 0
+            raise TasaCambioInvalidaError(
+                "La tasa de cambio debe ser mayor que cero."
+            )
+        self.tasa = tasa
+
+    def obtener_tasa(self):
+        return self.tasa    #Regresa la tasa que se guardo
+
+
+class ConversorMoneda:    #Convierte MXN aUSD
+    def __init__(self, proveedor_tipo_cambio):    #Recibe la tasa de cambio
+        self.proveedor_tipo_cambio = proveedor_tipo_cambio
+
+    def convertir_a_usd(self, cantidad_mxn):
+        tasa = self.proveedor_tipo_cambio.obtener_tasa()    #Se obtiene la tasa
+
+        if tasa <= 0:
+            raise TasaCambioInvalidaError(
+                "No se puede convertir con una tasa inválida."
+            )
+
+        return cantidad_mxn / tasa    #Pesos a DÓlares
+
+#---Datos del CLiente---
+class EntradaDatos:
+    @staticmethod
+    def pedir_nombre():   #Nombre cliente
+        while True:
+            nombre = input("Nombre del asegurado: ").strip()
+            if nombre:
+                return nombre
+            print("El nombre no puede estar vacío.")
+
+    @staticmethod
+    def pedir_edad():   #Edad
+        while True:
+            try:
+                edad = int(input("Edad: "))
+                if edad < 18 or edad > 99:    #Edad entre 18-99
+                    raise EdadInvalidaError(
+                        "La edad debe estar entre 18 y 99."
+                    )
+                return edad
+            except ValueError:
+                print("Error: escribe la edad como un número entero.")
+            except EdadInvalidaError as error:
+                print("Error:", error)
+
+    @staticmethod
+    def pedir_sexo():   #Sexo
+        while True:
+            try:
+                sexo = input("Sexo (M/F): ").strip().upper()
+                if sexo not in ("M", "F"):    #Solo se permiten M o F
+                    raise SexoInvalidoError(
+                        "Solo se permite M o F."
+                    )
+                return sexo
+            except SexoInvalidoError as error:
+                print("Error:", error)
+
+    @staticmethod
+    def pedir_opcion(mensaje):    #Función para pedir Si/No en EP y fumador
+        while True:
+            try:
+                opcion = input(mensaje).strip().capitalize()
+                if opcion not in ("Si", "No"):
+                    raise OpcionInvalidaError(
+                        "Solo se permite escribir Si o No."
+                    )
+                return opcion
+            except OpcionInvalidaError as error:
+                print("Error:", error)
+
+    @staticmethod
+    def pedir_suma_asegurada():   #Suma Asegurada
+        while True:
+            try:
+                suma = float(input("Suma asegurada en MXN: "))
+                if suma < 500000 or suma > 3000000:
+                    raise SumaAseguradaInvalidaError(
+                        "La suma debe estar entre $500,000 y $3,000,000."
+                    )
+                return suma
+            except ValueError:
+                print("Error: escribe una cantidad numérica.")
+            except SumaAseguradaInvalidaError as error:
+                print("Error:", error)
+
+    @staticmethod
+    def pedir_cantidad_asegurados():    #Num personas
+        while True:
+            try:
+                cantidad = int(input("¿Cuántos asegurados vas a registrar? "))
+                if cantidad <= 0:
+                    raise ValueError
+                return cantidad
+            except ValueError:
+                print("Ingresa un número entero mayor que cero.")
 
