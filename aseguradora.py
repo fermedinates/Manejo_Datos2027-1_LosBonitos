@@ -49,3 +49,67 @@ class FactorMasculino(FactorEdadStrategy):
         if edad <= 65:
             return 2.5
         return 3.0
+        #------------En VSC-------
+class Asegurado:
+    def __init__(self, nombre, edad, fumador, sexo, extra_prima,
+                 suma_asegurada):    #Guarda los datos del asegurado
+        self.nombre = nombre
+        self.edad = edad
+        self.fumador = fumador
+        self.sexo = sexo
+        self.extra_prima = extra_prima
+        self.suma_asegurada = suma_asegurada
+
+    def calcular_edad_ajustada(self, considerar_extra=True): #Ajuste de edad
+        edad_ajustada = self.edad
+
+        if self.fumador == "No":
+            edad_ajustada -= 5
+
+        if self.sexo == "F":
+            edad_ajustada -= 10
+
+        if self.extra_prima == "Si" and considerar_extra:
+            edad_ajustada += 10
+
+        if edad_ajustada < 18:    #Regula que la edad no salga del rango
+            edad_ajustada = 18
+        elif edad_ajustada > 99:
+            edad_ajustada = 99
+
+        return edad_ajustada
+
+#---Calcular Prima---
+class CalculadoraPrima:
+    def __init__(self, estrategia_factor):    #Recibe factor de edad a utilizar
+        self.estrategia_factor = estrategia_factor
+
+    def calcular_prima(self, asegurado):    #Calcula prima sin EP
+        edad_ajustada = asegurado.calcular_edad_ajustada()
+        factor = self.estrategia_factor.obtener_factor(edad_ajustada)
+        #Factor correspondiente
+        prima = asegurado.suma_asegurada * factor / 1000
+        return prima
+          def calcular_extra_prima(self, asegurado):    #Prima con EP
+        if asegurado.extra_prima == "No":
+            return 0
+
+        edad_con_extra = asegurado.calcular_edad_ajustada()   #+10 años
+        edad_sin_extra = asegurado.calcular_edad_ajustada(False)    #No suma
+        #obtiene los 2 factores
+        factor_con_extra = self.estrategia_factor.obtener_factor(
+            edad_con_extra
+        )
+        factor_sin_extra = self.estrategia_factor.obtener_factor(
+            edad_sin_extra
+        )
+        #Calcula Primas
+        prima_con_extra = (
+            asegurado.suma_asegurada * factor_con_extra / 1000
+        )
+        prima_sin_extra = (
+            asegurado.suma_asegurada * factor_sin_extra / 1000
+        )
+
+        return prima_con_extra - prima_sin_extra    #Cuanto aumento por EP
+
