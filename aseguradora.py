@@ -51,7 +51,7 @@ class FactorMasculino(FactorEdadStrategy):
         return 3.0
         #------------En VSC-------
 class Asegurado:
-    def __init__(self, nombre, edad, fumador, sexo, extra_prima,
+    def __init__(self, nombre, edad, fumador, sexo, extra_prima,   #
                  suma_asegurada):    #Guarda los datos del asegurado
         self.nombre = nombre
         self.edad = edad
@@ -90,26 +90,26 @@ class CalculadoraPrima:
         #Factor correspondiente
         prima = asegurado.suma_asegurada * factor / 1000
         return prima
-          def calcular_extra_prima(self, asegurado):    #Prima con EP
-        if asegurado.extra_prima == "No":
-            return 0
+          def calcular_extra_prima(self, asegurado):    #Calcula el costo adicional de la extraprima 
+        if asegurado.extra_prima == "No": 
+            return 0  #Si no tiene extraprima no tiene un costo adicional
 
-        edad_con_extra = asegurado.calcular_edad_ajustada()   #+10 años
-        edad_sin_extra = asegurado.calcular_edad_ajustada(False)    #No suma
-        #obtiene los 2 factores
+        edad_con_extra = asegurado.calcular_edad_ajustada()   #obtiene la edad ajustada considerando los 10 años de la EP
+        edad_sin_extra = asegurado.calcular_edad_ajustada(False)    #Obtiene la edad ajustada sin sumar los 10 años de la EP 
+        #obtiene los 2 factores correspondientes a cada edad 
         factor_con_extra = self.estrategia_factor.obtener_factor(
-            edad_con_extra
+            edad_con_extra #Factor correspondiete edad con extra  prima 
         )
         factor_sin_extra = self.estrategia_factor.obtener_factor(
             edad_sin_extra
         )
-        #Calcula Primas
+        #Calcula Primas para poder obtener unicamente el incremento de la EP
         prima_con_extra = (
             asegurado.suma_asegurada * factor_con_extra / 1000
-        )
+        )  #Prima calculada considerando La EP
         prima_sin_extra = (
             asegurado.suma_asegurada * factor_sin_extra / 1000
-        )
+        ) #Prima calculada sin agregar la extra prima
 
-        return prima_con_extra - prima_sin_extra    #Cuanto aumento por EP
+        return prima_con_extra - prima_sin_extra    #Cuanto aumento por EP    la diferencia represewnta el costo adicional de la extraprima 
 
