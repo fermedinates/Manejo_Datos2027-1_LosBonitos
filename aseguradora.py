@@ -223,3 +223,140 @@ class EntradaDatos:
             except ValueError:
                 print("Ingresa un número entero mayor que cero.")
 
+#--- Carnet---
+class ExportadorCarnet:   #Archivo .txt
+    @staticmethod
+    def guardar(numero, asegurado, edad_ajustada, prima_mxn, prima_usd):
+    #Datos para crear el archivo
+        nombre_archivo = f"carnet_{numero}.txt"
+
+        try:    #Intento para guardar el txt
+            with open(nombre_archivo, "w", encoding="utf-8") as archivo:
+                archivo.write("CARNET\n")   #Datos dentro del archivo
+                archivo.write(f"Nombre: {asegurado.nombre}\n")
+                archivo.write(f"Edad: {asegurado.edad}\n")
+                archivo.write(f"Edad ajustada: {edad_ajustada}\n")
+                archivo.write(f"Sexo: {asegurado.sexo}\n")
+                archivo.write(f"Fumador: {asegurado.fumador}\n")
+                archivo.write(
+                    f"Extra-prima: {asegurado.extra_prima}\n"
+                )
+                archivo.write(
+                    f"Suma asegurada: ${asegurado.suma_asegurada:,.2f} MXN\n"
+                )
+                archivo.write(f"Prima anual: ${prima_mxn:,.2f} MXN\n")
+                archivo.write(f"Prima anual: ${prima_usd:,.2f} USD\n")
+
+            print(f"Carnet guardado en {nombre_archivo}")   #Avisa que se guardo
+        except OSError as error:    #Por un problema marca error, y continua
+            print("No se pudo guardar el carnet:", error)
+
+
+def crear_estrategia(sexo):   #Si se usa el FactorFem/Mas
+    if sexo == "F":
+        return FactorFemenino()
+    return FactorMasculino()
+
+
+def mostrar_reporte(resultados):    #Toma los datos para hacer un resumen
+    primas = []   #Lista para guardar la prima mxn de casa asegurado
+
+    for resultado in resultados:
+        primas.append(resultado["prima_mxn"])   #Guarda en la lista
+
+    promedio = sum(primas) / len(primas)    #Análisis
+    prima_maxima = max(primas)
+    prima_minima = min(primas)
+
+    print(f" \n REPORTE")
+    print(f"Prima promedio: ${promedio:,.2f} MXN")
+    print(f"Prima máxima: ${prima_maxima:,.2f} MXN")
+    print(f"Prima mínima: ${prima_minima:,.2f} MXN")
+
+    con_extra = []    #Guarda asegurados con EP
+    for resultado in resultados:
+        if resultado["asegurado"].extra_prima == "Si":
+            con_extra.append(resultado)
+
+    if con_extra:   #Si tiene EP dic quien tuvo la EP más alta
+        mayor_extra = max(
+            con_extra,
+            key=lambda resultado: resultado["monto_extra_prima"]
+        )
+        asegurado = mayor_extra["asegurado"]
+        monto = mayor_extra["monto_extra_prima"]
+        print(
+            "Asegurado con la extra-prima más alta: "
+            f"{asegurado.nombre} (${monto:,.2f} MXN)"
+        )
+    else:
+        print("Ningún asegurado tiene extra-prima.")
+
+#---Principal---
+def main():
+    print("CALCULADORA DE SEGUROS")
+
+    try:    #Tipo de cambio, MXN a USA
+        proveedor = TipoCambioFijo()
+        conversor = ConversorMoneda(proveedor)
+    except TasaCambioInvalidaError as error:
+        print("Error con la tasa de cambio:", error)
+        return
+
+    cantidad = EntradaDatos.pedir_cantidad_asegurados()  #Guarda num de cliente
+    resultados = []   #Guarda los datos de los clientes
+
+    for numero in range(1, cantidad + 1):   #Repite según los asegurados
+        print(f"\nASEGURADO {numero}")
+
+        nombre = EntradaDatos.pedir_nombre()
+        edad = EntradaDatos.pedir_edad()
+        sexo = EntradaDatos.pedir_sexo()
+        fumador = EntradaDatos.pedir_opcion("¿Es fumador? (Si/No): ")
+        extra_prima = EntradaDatos.pedir_opcion(
+            "¿Tiene extra-prima? (Si/No): "
+        )
+        suma_asegurada = EntradaDatos.pedir_suma_asegurada()
+
+        asegurado = Asegurado(
+            nombre,
+            edad,
+            fumador,
+            sexo,
+            extra_prima,
+            suma_asegurada
+        )
+
+        estrategia = crear_estrategia(sexo)   #Estrategia
+        calculadora = CalculadoraPrima(estrategia)
+
+        prima_mxn = calculadora.calcular_prima(asegurado)    #Prima en mxn
+        prima_usd = conversor.convertir_a_usd(prima_mxn)    #Prima en usa
+        monto_extra = calculadora.calcular_extra_prima(asegurado)
+        edad_ajustada = asegurado.calcular_edad_ajustada()
+
+        print(f"Edad ajustada: {edad_ajustada}")
+        print(f"Prima anual: ${prima_mxn:,.2f} MXN")
+        print(f"Prima anual: ${prima_usd:,.2f} USD")
+
+        resultados.append({
+            "asegurado": asegurado,
+            "prima_mxn": prima_mxn,
+            "prima_usd": prima_usd,
+            "monto_extra_prima": monto_extra
+        })    #Guarda la información en la lista resultados
+
+        ExportadorCarnet.guardar(
+            numero,
+            asegurado,
+            edad_ajustada,
+            prima_mxn,
+            prima_usd
+        )
+
+    mostrar_reporte(resultados)
+
+
+if __name__ == "__main__":
+    main()    #Que el programa funcione en orden
+
