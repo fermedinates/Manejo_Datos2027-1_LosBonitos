@@ -1,0 +1,10 @@
+CARNET
+Nombre: Gaell Leon
+Edad: 20
+Edad ajustada: 18
+Sexo: M
+Fumador: No
+Extra-prima: No
+Suma asegurada: $1,000,000.00 MXN
+Prima anual: $2,000.00 MXN
+Prima anual: $94.65 USD
