@@ -155,3 +155,106 @@ class MergeSort(Ordenador):
         resultado.extend(derecha[indice_derecha:])
 
         return resultado
+   
+    # Complejidad temporal: O(n log n) en mejor y peor caso.
+    # Divide la lista en dos en cada nivel; mezclar cuesta O(n).
+    # Hay aproximadamente log(n) niveles: n * log(n).
+    # Memoria auxiliar: O(n).
+
+
+class QuickSort(Ordenador):
+    def ordenar(self, palabras):
+        # Ordenamos una copia para conservar la lista original.
+        resultado = palabras.copy()
+        self._quick_sort(resultado, 0, len(resultado) - 1)
+        return resultado
+
+    def _quick_sort(self, palabras, inicio, fin):
+        # Caso base: una parte de cero o un elemento ya está ordenada.
+        if inicio >= fin:
+            return
+
+        indice_izquierda = inicio
+        indice_derecha = fin
+
+        # El pivote es el valor ubicado en la posición central.
+        pivote = palabras[(inicio + fin) // 2]
+
+        # Particionamos: menores a la izquierda y mayores a la derecha.
+        while indice_izquierda <= indice_derecha:
+            while palabras[indice_izquierda] < pivote:
+                indice_izquierda += 1
+                
+                while palabras[indice_derecha] > pivote:
+                indice_derecha -= 1
+
+            if indice_izquierda <= indice_derecha:
+                palabras[indice_izquierda], palabras[indice_derecha] = (
+                    palabras[indice_derecha],
+                    palabras[indice_izquierda],
+                )
+                indice_izquierda += 1
+                indice_derecha -= 1
+
+        # Repetimos el proceso recursivamente en ambos lados.
+        if inicio < indice_derecha:
+            self._quick_sort(palabras, inicio, indice_derecha)
+
+        if indice_izquierda < fin:
+            self._quick_sort(palabras, indice_izquierda, fin)
+
+    # Complejidad temporal: O(n log n) si las particiones quedan equilibradas.
+    # Peor caso: O(n²), si el pivote deja partes de tamaños n-1 y 0
+    # Elegir la posición central ayuda, pero no garantiza elegir la mediana
+    # Recursión: O(log n) espacio promedio y O(n) en el peor caso.
+
+
+def palabra_desde_indice(indice):
+    # Convierte un índice en una palabra única de tres letras
+    # Hay 26 ** 3 combinaciones, suficientes para estas pruebas.
+    if not 0 <= indice < 26 ** 3:
+        raise ValueError("El índice está fuera del rango generado.")
+
+    letras = []
+
+    for _ in range(3):
+        letra = chr(ord("a") + indice % 26)
+        letras.append(letra)
+        indice //= 26
+
+    return "".join(reversed(letras))
+
+
+def generar_texto_prueba(cantidad_palabras):
+    # Generamos palabras distintas y repetimos la primera una vez.
+    # Así el texto tiene exactamente la cantidad solicitada de palabras.
+    if cantidad_palabras < 2:
+        raise ValueError("Se necesitan al menos dos palabras.")
+
+    tokens = [
+        palabra_desde_indice(indice)
+        for indice in range(cantidad_palabras - 1)
+    ]
+    tokens.append(tokens[0])
+
+    return " ".join(tokens)
+    
+    def medir_tabla_hash(palabras, repeticiones):
+    tiempos = []
+    tabla_ultima = None
+
+    for _ in range(repeticiones):
+        inicio = time.perf_counter()
+
+        capacidad = 2 * len(palabras) + 1
+        tabla = TablaHashFrecuencia(capacidad)
+
+        for palabra in palabras:
+            tabla.agregar(palabra)
+
+        fin = time.perf_counter()
+        tiempos.append(fin - inicio)
+        tabla_ultima = tabla
+
+    promedio = sum(tiempos) / repeticiones
+    return promedio, tabla_ultima
