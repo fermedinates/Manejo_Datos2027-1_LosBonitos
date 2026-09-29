@@ -258,3 +258,68 @@ def generar_texto_prueba(cantidad_palabras):
 
     promedio = sum(tiempos) / repeticiones
     return promedio, tabla_ultima
+
+def medir_ordenamiento(ordenador, palabras, repeticiones):
+    tiempos = []
+    resultado = []
+
+    for _ in range(repeticiones):
+        inicio = time.perf_counter()
+        resultado = ordenador.ordenar(palabras)
+        fin = time.perf_counter()
+
+        tiempos.append(fin - inicio)
+
+    promedio = sum(tiempos) / repeticiones
+    return promedio, resultado
+
+
+def comparar_tiempos():
+    tamanos = (100, 1000, 10000)
+    repeticiones = 5
+
+    merge_sort = MergeSort()
+    quick_sort = QuickSort()
+
+    print("\nComparación de tiempos promedio en segundos")
+    print(
+        f"{'Palabras texto':>15} | "
+        f"{'Distintas':>10} | "
+        f"{'Tabla hash':>12} | "
+        f"{'Merge Sort':>12} | "
+        f"{'Quick Sort':>12}"
+    )
+    print("-" * 73)
+
+    for cantidad in tamanos:
+        texto_prueba = generar_texto_prueba(cantidad)
+        palabras = extraer_palabras(texto_prueba)
+
+        # Medimos creación de la tabla e inserción de sus palabras
+        tiempo_hash, tabla = medir_tabla_hash(palabras, repeticiones)
+        palabras_distintas = tabla.palabras_unicas()
+
+        # Ambos algoritmos reciben las mismas palabras distintas
+        tiempo_merge, resultado_merge = medir_ordenamiento(
+            merge_sort,
+            palabras_distintas,
+            repeticiones,
+        )
+        tiempo_quick, resultado_quick = medir_ordenamiento(
+            quick_sort,
+            palabras_distintas,
+            repeticiones,
+        )
+
+        if resultado_merge != resultado_quick:
+            raise AssertionError(
+                "Los algoritmos produjeron resultados distintos."
+            )
+
+        print(
+            f"{cantidad:15d} | "
+            f"{len(palabras_distintas):10d} | "
+            f"{tiempo_hash:12.9f} | "
+            f"{tiempo_merge:12.9f} | "
+            f"{tiempo_quick:12.9f}"
+        )
