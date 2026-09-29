@@ -323,3 +323,79 @@ def comparar_tiempos():
             f"{tiempo_merge:12.9f} | "
             f"{tiempo_quick:12.9f}"
         )
+    def main():
+      while True:
+        # Si la entrada está vacía o no contiene palabras, pedimos otro texto
+        while True:
+            texto = input("\nEscribe o pega un texto: ")
+
+            try:
+                palabras = extraer_palabras(texto)
+                break
+            except (
+                TextoVacioError,
+                TextoSinPalabrasError,
+                TypeError,
+            ) as error:
+                print(f"Entrada no válida: {error} Intenta de nuevo.")
+
+        capacidad = 2 * len(palabras) + 1
+        tabla = TablaHashFrecuencia(capacidad)
+
+        for palabra in palabras:
+            tabla.agregar(palabra)
+
+        palabras_distintas = tabla.palabras_unicas()
+
+        print("\nPalabras extraídas:")
+        print(palabras)
+
+        print("\nPalabras distintas antes de ordenar:")
+        print(palabras_distintas)
+
+        # Ambos objetos ofrecen la misma operación: ordenar()
+        ordenadores = [
+            ("Merge Sort", MergeSort()),
+            ("Quick Sort", QuickSort()),
+        ]
+
+        resultados = []
+
+        for nombre, ordenador in ordenadores:
+            palabras_ordenadas = ordenador.ordenar(palabras_distintas)
+            resultados.append(palabras_ordenadas)
+
+            print(f"\nResultado de {nombre}:")
+            print(palabras_ordenadas)
+
+        # Comprobamos que ambos algoritmos produzcan el mismo resultado
+        for resultado in resultados[1:]:
+            if resultado != resultados[0]:
+                raise AssertionError(
+                    "Los algoritmos produjeron resultados distintos."
+                )
+
+        print("\nDiccionario alfabético y frecuencias:")
+        for palabra in resultados[0]:
+            print(f"{palabra}: {tabla.frecuencia(palabra)}")
+
+        # Preguntamos si desea comenzar otra vuelta del programa.
+        while True:
+            respuesta = input(
+                "\n¿Deseas procesar otro texto? (s/n): "
+            ).strip().casefold()
+
+            if respuesta in ("s", "si", "sí"):
+                break
+
+            if respuesta in ("n", "no"):
+                # Ejecuta la comparación empírica del punto 5
+                comparar_tiempos()
+                return
+
+            print("Escribe s/sí para continuar o n/no para terminar.")
+
+
+if __name__ == "__main__":
+    main()
+        
